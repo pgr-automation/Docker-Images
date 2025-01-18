@@ -1,0 +1,40 @@
+@Library('pgr_automation_libraries') _  
+
+def common =  new org.pgr.pipeline.utilities.common()
+
+def gitrepoName = ""
+def artifactoryURL = ""
+def imageRepo = ""
+
+def dockerFileTagMap = [
+  ["maven/Dockerfile.openjdk.17.0.2", "openjdk.17.0.2"]
+]
+
+pipeline {
+  agent {
+    kubernetes {
+      cloud ""
+      yamlFile "PodBuild.yaml"
+      slaveConnectTimeout 300
+      podRentention never()
+    }
+  }
+  stages {
+    stage('Lint Dockerfile') {
+      steps{
+        container('hadolint'){
+          script{
+            dockerFileTagMap.each {filename ->
+            def dockerfile = filename(0)
+            sh """
+              echo "Running dockerLint for Dockerfile: ${dockerfile}"
+              hadolint ${dockerfile} || true 
+            """
+            }
+          }
+        }
+      }
+    }
+  }
+  
+}

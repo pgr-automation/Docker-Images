@@ -1,0 +1,62 @@
+spec:
+  containers:
+  - command: 
+    - "cat"
+    image: "docker:24.0.2"
+    name: "mavenagent"
+    imagePullPolicy: "IfNotPresent"
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "100Mi"
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/.m2"
+      name: "m2-volume"
+      readOnly: false
+    - mountPath: "/var/run/docker.sock"
+      name: "docker-socket-volume"
+      readOnly: false
+    - mountPath: "/home/jenkins/.ssh"
+      name: "ssh-volume"
+      readOnly: false
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+
+  - command: 
+    - "cat"
+    image: "hadolint/hadolint:v2.12.0-alpine"
+    name: "mavenagent"
+    imagePullPolicy: "IfNotPresent"
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "100Mi"
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/.m2"
+      name: "m2-volume"
+      readOnly: false
+    - mountPath: "/var/run/docker.sock"
+      name: "docker-socket-volume"
+      readOnly: false
+    - mountPath: "/home/jenkins/.ssh"
+      name: "ssh-volume"
+      readOnly: false
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+
+restartPolicy: "Never"
+serviceAccount: {}
+volumes:
+  - hostPath: 
+      - path: "/var/run/docker.sock"
+    name: "docker-socket-volume"
