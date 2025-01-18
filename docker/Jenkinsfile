@@ -21,7 +21,7 @@ pipeline {
   stages {
     stage('Lint Dockerfile') {
       steps{
-        container('hadolint'){
+        container('hadolint-agent'){
           script{
             dockerFileTagMap.each {filename ->
             def dockerfile = filename(0)
