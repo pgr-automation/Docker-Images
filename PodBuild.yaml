@@ -3,7 +3,7 @@ spec:
   - command: 
     - "cat"
     image: "docker:24.0.2"
-    name: "mavenagent"
+    name: "docker-agent"
     imagePullPolicy: "IfNotPresent"
     resources:
       limits:
@@ -30,7 +30,7 @@ spec:
   - command: 
     - "cat"
     image: "hadolint/hadolint:v2.12.0-alpine"
-    name: "mavenagent"
+    name: "hadolint-agent"
     imagePullPolicy: "IfNotPresent"
     resources:
       limits:
@@ -58,5 +58,5 @@ restartPolicy: "Never"
 serviceAccount: {}
 volumes:
   - hostPath: 
-      - path: "/var/run/docker.sock"
+      path: "/var/run/docker.sock"
     name: "docker-socket-volume"
