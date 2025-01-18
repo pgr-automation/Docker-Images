@@ -13,10 +13,10 @@ def dockerFileTagMap = [
 pipeline {
   agent {
     kubernetes {
-      cloud ""
-      yamlFile "PodBuild.yaml"
+      cloud "k8-jenkins"
+      yamlFile "../PodBuild.yaml"
       slaveConnectTimeout 300
-      podRentention never()
+      // podRentention never()
     }
   }
   stages {
