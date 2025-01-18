@@ -20,20 +20,19 @@ pipeline {
   }
   stages {
     stage('Lint Dockerfile') {
-      steps{
-        container('hadolint-agent'){
-          script{
-            dockerFileTagMap.each {filename ->
-            def dockerfile = filename(0)
-            sh """
-              echo "Running dockerLint for Dockerfile: ${dockerfile}"
-              hadolint ${dockerfile} || true 
-            """
+      steps {
+        container('hadolint-agent') {
+          script {
+            dockerFileTagMap.each { filenameTagPair ->
+              def dockerfile = filenameTagPair[0] // Correct way to access the first element
+              sh """
+                echo "Running dockerLint for Dockerfile: ${dockerfile}"
+                hadolint ${dockerfile} || true 
+              """
             }
           }
         }
       }
     }
   }
-  
 }
