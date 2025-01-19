@@ -47,8 +47,8 @@ pipeline {
         container('docker-agent') {
           script {
             echo "Image build and push to artifactory"
-            // def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "default"
-            def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
+             def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "main"
+            def envType = (BRANCH_NAME == 'main') ? 'prod' : 'nonprod'
             dockerFileTagMap.each { filenameTagPair ->
               if (filenameTagPair.size() >= 1) {
                 def dockerfile = filenameTagPair[0]
