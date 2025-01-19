@@ -25,7 +25,8 @@ pipeline {
           script {
             dockerFileTagMap.each { filenameTagPair ->
               def dockerfile = filenameTagPair[0] // Correct way to access the first element
-                println $dockerfile
+                // println $dockerfile
+                
               sh """
                 echo "Running dockerLint for Dockerfile: ${dockerfile}"
                 hadolint ${dockerfile} || true 
