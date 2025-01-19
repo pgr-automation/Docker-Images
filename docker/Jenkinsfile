@@ -1,7 +1,8 @@
 @Library('pgr_automation_libraries') _  
 
-def common = new org.pgr.pipeline.utilities.common()
+def common =  new org.pgr.pipeline.utilities.common()
 
+def gitrepoName = ""
 def artifactoryURL = "http://192.168.1.130:8081"
 def imageRepo = "devops-docker-local"
 
@@ -12,7 +13,7 @@ def dockerFileTagMap = [
 pipeline {
   environment {
     DOCKER_REGISTRY_URL = "http://192.168.1.130:5000"
-    DOCKER_REGISTRY_CRDS = "nexus" // Replace with correct credential ID
+    DOCKER_REGISTRY_CRDS = "nexus"
   }
   agent {
     kubernetes {
@@ -27,38 +28,43 @@ pipeline {
         container('hadolint-agent') {
           script {
             dockerFileTagMap.each { filenameTagPair ->
-              def dockerfile = filenameTagPair[0]
+              def dockerfile = filenameTagPair[0] // Correct way to access the first element
+                // println $dockerfile
+                
               sh """
-                echo "Running hadolint for Dockerfile: ${dockerfile}"
-                hadolint ${dockerfile} || true
+                echo "Running dockerLint for Dockerfile: ${dockerfile}"
+                hadolint ${dockerfile} || true 
               """
             }
           }
         }
       }
     }
-    stage('Build & Push') {
-      steps {
-        container('docker-agent') {
+    stage('Build & Push'){
+      steps{
+        container('docker-agent'){
           script {
-            echo "Building and pushing Docker images to Artifactory"
-            def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: 'default-branch'
-            def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
-            echo "Environment Type: ${envType}"
-            echo "Branch Name: ${BRANCH_NAME}"
-            
-            docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}") {
-              dockerFileTagMap.each { filenameTagPair ->
-                def dockerfile = filenameTagPair[0]
-                def tag = filenameTagPair[1]
-                def imageTag = "${imageRepo}:${tag}"
-                sh """
-                  docker build -t ${imageTag} -f ${dockerfile} .
-                  docker push ${imageTag}
-                """
-              }
-            }
-          }
+            echo "Image build and push to artifactory"
+              def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
+              def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
+              echo "envType is " + envType
+              echo "Branch Name " + BRANCH_NAME
+            // docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}"){
+            //   dockerFileTagMap.each { filenameTagPair ->
+            //     def dockerfile = filenameTagPair[0]
+            //     def tag = filenameTagPair[1]
+            //     def appname = filenameTagPair[0].split("/")[0]
+            //     def imageTag = "${env.DOCKER_REGISTRY_URL}:${tag}"
+            //     sh  """
+            //       docker build -t ${imageTag} -f ${dockerfile} 
+
+
+            //     """
+
+            //   }
+            // }
+
+          } 
         }
       }
     }
