@@ -11,7 +11,7 @@ def dockerFileTagMap = [
 ]
 
 pipeline {
-  environement {
+  environment {
     DOCKER_REGISTRY_URL = "http://192.168.1.130:5000"
     DOCKER_REGISTRY_CRDS = "nexus"
   }
@@ -45,10 +45,10 @@ pipeline {
         container('docker-agent'){
           script {
             echo "Image build and push to artifactory"
-            def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
-            def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
-            echo "envType is " + envType
-            echo "Branch Name " + BRANCH_NAME
+            // def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
+            // def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
+            // echo "envType is " + envType
+            // echo "Branch Name " + BRANCH_NAME
             docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}"){
               dockerFileTagMap.each { filenameTagPair ->
                 def dockerfile = filenameTagPair[0]
