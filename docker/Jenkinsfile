@@ -3,11 +3,11 @@
 def common =  new org.pgr.pipeline.utilities.common()
 
 def gitrepoName = ""
-def artifactoryURL = ""
-def imageRepo = ""
+def artifactoryURL = "http://192.168.1.130:8081"
+def imageRepo = "devops-docker-local"
 
 def dockerFileTagMap = [
-  ["./Dockerfile.24.0.6", "24.0.6"]
+  ["./docker/Dockerfile.24.0.6", "24.0.6"]
 ]
 
 pipeline {
@@ -25,12 +25,36 @@ pipeline {
           script {
             dockerFileTagMap.each { filenameTagPair ->
               def dockerfile = filenameTagPair[0] // Correct way to access the first element
+                println $dockerfile
               sh """
                 echo "Running dockerLint for Dockerfile: ${dockerfile}"
                 hadolint ${dockerfile} || true 
               """
             }
           }
+        }
+      }
+    }
+    stage('Build & Push'){
+      steps{
+        container('docker-agent'){
+          script {
+            echo "Image build and push to artifactory"
+            def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
+            def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
+            echo "envType is " + envType
+            echo "Branch Name " + BRANCH_NAME
+            docker.withRegistry("${env.ARTIFACTORY_URL}", "${env.ARTIFACTORY_CREDENTIALS}"){
+              dockerFileTagMap.each { filenameTagPair ->
+                def dockerfile = filenameTagPair[0]
+                def tag = filenameTagPair[1]
+                def appname = filenameTagPair[0].split("/")[0]
+                //def imageTag = "$"
+
+              }
+            }
+
+          } 
         }
       }
     }
