@@ -51,6 +51,11 @@ pipeline {
                 def tag = filenameTagPair[1]
                 def appname = filenameTagPair[0].split("/")[0]
                 //def imageTag = "$"
+                sh  """
+                  docker build -t test -f $dockerfile 
+
+
+                """
 
               }
             }
