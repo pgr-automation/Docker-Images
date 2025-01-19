@@ -11,6 +11,10 @@ def dockerFileTagMap = [
 ]
 
 pipeline {
+  environement {
+    DOCKER_REGISTRY_URL = "http://192.168.1.130:5000"
+    DOCKER_REGISTRY_CRDS = "nexus"
+  }
   agent {
     kubernetes {
       label 'k8-jenkins'
@@ -45,14 +49,14 @@ pipeline {
             def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
             echo "envType is " + envType
             echo "Branch Name " + BRANCH_NAME
-            docker.withRegistry("${env.ARTIFACTORY_URL}", "${env.ARTIFACTORY_CREDENTIALS}"){
+            docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}"){
               dockerFileTagMap.each { filenameTagPair ->
                 def dockerfile = filenameTagPair[0]
                 def tag = filenameTagPair[1]
                 def appname = filenameTagPair[0].split("/")[0]
-                //def imageTag = "$"
+                def imageTag = "${env.DOCKER_REGISTRY_URL}:${tag}"
                 sh  """
-                  docker build -t test -f $dockerfile 
+                  docker build -t ${imageTag} -f ${dockerfile} 
 
 
                 """
