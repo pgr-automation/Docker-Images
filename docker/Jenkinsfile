@@ -47,8 +47,7 @@ pipeline {
             echo "Image build and push to artifactory"
               def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
               def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
-              echo "envType is " + envType
-              echo "Branch Name " + BRANCH_NAME
+              
             // docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}"){
             //   dockerFileTagMap.each { filenameTagPair ->
             //     def dockerfile = filenameTagPair[0]
@@ -60,6 +59,10 @@ pipeline {
 
 
             //     """
+                   sh """
+                    echo "envType is " + ${envType}
+              e     cho "Branch Name " + ${BRANCH_NAME}
+                   """
 
             //   }
             // }
