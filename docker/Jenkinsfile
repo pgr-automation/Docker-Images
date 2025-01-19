@@ -28,46 +28,45 @@ pipeline {
         container('hadolint-agent') {
           script {
             dockerFileTagMap.each { filenameTagPair ->
-              def dockerfile = filenameTagPair[0] // Correct way to access the first element
-                // println $dockerfile
-                
-              sh """
+              if (filenameTagPair.size() >= 1) { // Safeguard for accessing elements
+                def dockerfile = filenameTagPair[0]
                 echo "Running dockerLint for Dockerfile: ${dockerfile}"
-                hadolint ${dockerfile} || true 
-              """
+                sh """
+                  hadolint ${dockerfile} || true
+                """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+              }
             }
           }
         }
       }
     }
-    stage('Build & Push'){
-      steps{
-        container('docker-agent'){
+    stage('Build & Push') {
+      steps {
+        container('docker-agent') {
           script {
             echo "Image build and push to artifactory"
-              def BRANCH_NAME = env.GIT_BRANCH.split("/")[1]
-              def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
-              
-            // docker.withRegistry("${env.DOCKER_REGISTRY_URL}", "${env.DOCKER_REGISTRY_CRDS}"){
-            //   dockerFileTagMap.each { filenameTagPair ->
-            //     def dockerfile = filenameTagPair[0]
-            //     def tag = filenameTagPair[1]
-            //     def appname = filenameTagPair[0].split("/")[0]
-            //     def imageTag = "${env.DOCKER_REGISTRY_URL}:${tag}"
-            //     sh  """
-            //       docker build -t ${imageTag} -f ${dockerfile} 
-
-
-            //     """
-                   sh """
-                    echo "envType is " + ${envType}
-              e     cho "Branch Name " + ${BRANCH_NAME}
-                   """
-
-            //   }
-            // }
-
-          } 
+            def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "default"
+            def envType = (BRANCH_NAME == 'master') ? 'prod' : 'nonprod'
+            dockerFileTagMap.each { filenameTagPair ->
+              if (filenameTagPair.size() >= 2) {
+                def dockerfile = filenameTagPair[0]
+                def tag = filenameTagPair[1]
+                echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
+                sh """
+                  echo "Env Type: ${envType}"
+                  echo "Branch Name: ${BRANCH_NAME}"
+                  docker build -t ${env.DOCKER_REGISTRY_URL}/${imageRepo}:${tag} -f ${dockerfile} .
+                """
+                sh """
+                  docker push ${env.DOCKER_REGISTRY_URL}/${imageRepo}:${tag}
+                """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+              }
+            }
+          }
         }
       }
     }
