@@ -59,11 +59,11 @@ pipeline {
                 sh """
                   echo "Env Type: ${envType}"
                   echo "Branch Name: ${BRANCH_NAME}"
-                  docker build -t test -f ${dockerfile} .
+                  docker build -t test -f ${dockerfile} --network=host .
                 """
                 
               } else {
-                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
               }
             }
           }
