@@ -11,9 +11,8 @@ RUN apk --update --no-cache add curl git zip
 
 RUN apk update \
   && apk add --no-cache wget \
-  && apk add --no-cache datautils \  
+  && apk add --no-cache dateutils \  
   && apk add --no-cache jq \ 
   && apk add --no-cache unzip \
   && apk add --no-cache ruby \
   && rm -rf /var/cache/apk/*
-  
