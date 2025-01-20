@@ -28,7 +28,7 @@ pipeline {
         container('hadolint-agent') {
           script {
             dockerFileTagMap.each { filenameTagPair ->
-              if (filenameTagPair.size() >= 1) { // Safeguard for accessing elements
+              if (filenameTagPair.size() >= 1) { 
                 def dockerfile = filenameTagPair[0]
                 echo "Running dockerLint for Dockerfile: ${dockerfile}"
                 sh """
