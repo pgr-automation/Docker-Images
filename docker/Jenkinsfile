@@ -44,7 +44,7 @@ pipeline {
     }
     stage('Build & Push') {
       steps {
-        container('docker-agent') {
+        container('docker') {
           script {
             echo "Image build and push to artifactory"
             // def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "main"
