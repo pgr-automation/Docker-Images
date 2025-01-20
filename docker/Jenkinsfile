@@ -59,6 +59,7 @@ pipeline {
                 sh """
                   echo "Env Type: ${envType}"
                   echo "Branch Name: ${BRANCH_NAME}"
+                  sleep 600
                   docker build -t test -f ${dockerfile} --network=host .
                 """
                 
