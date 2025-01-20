@@ -59,7 +59,7 @@ pipeline {
                 sh """
                   echo "Env Type: ${envType}"
                   echo "Branch Name: ${BRANCH_NAME}"
-                  docker build -t ${env.DOCKER_REGISTRY_URL}/:docker-${tag} -f ${dockerfile}
+                  docker build -t ${env.DOCKER_REGISTRY_URL}/docker:${tag} -f ${dockerfile}
                 """
                 
               } else {
