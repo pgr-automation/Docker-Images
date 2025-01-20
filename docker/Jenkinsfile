@@ -47,7 +47,7 @@ pipeline {
         container('docker-agent') {
           script {
             echo "Image build and push to artifactory"
-            // def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "main"
+            def BRANCH_NAME = env.GIT_BRANCH?.split("/")?.getAt(1) ?: "main"
             def envType = (BRANCH_NAME == 'main') ? 'prod' : 'nonprod'
             dockerFileTagMap.each { filenameTagPair ->
               if (filenameTagPair.size() >= 1) {
@@ -57,7 +57,7 @@ pipeline {
                 sh """
                   echo "Env Type: ${envType}"
                   echo "Branch Name: ${BRANCH_NAME}"
-                  docker build -t ${env.DOCKER_REGISTRY_URL}/${imageRepo}:${tag} -f ${dockerfile} .
+                  docker build -t test -f ${dockerfile} .
                 """
                 sh """
                   docker push ${env.DOCKER_REGISTRY_URL}/${imageRepo}:${tag}
