@@ -1,4 +1,4 @@
-@Library('pgr_automation_libraries') _  
+@Library('pgr_automation_libraries@main') _  
 
 def common = new org.pgr.pipeline.utilities.common()
 
@@ -19,7 +19,7 @@ pipeline {
   agent {
     kubernetes {
       label 'k8-jenkins'
-      defaultContainer 'jnlp'
+      // defaultContainer 'jnlp'
       yamlFile "../agentPod.yaml"
     }
   }
