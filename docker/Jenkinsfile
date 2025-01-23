@@ -1,6 +1,6 @@
 @Library('pgr_automation_libraries') _  
 
-def common =  new org.pgr.pipeline.utilities.common()
+def common = new org.pgr.pipeline.utilities.common()
 
 def gitrepoName = ""
 def artifactoryURL = "http://192.168.1.130:8081"
@@ -47,7 +47,8 @@ pipeline {
         container('docker-agent') {
           script {
             echo "Image build and push to artifactory"
-            def envType = (BRANCH_NAME == 'main') ? 'prod' : 'nonprod'
+            def branchName = env.BRANCH_NAME ?: 'nonprod' // Default to 'nonprod'
+            def envType = (branchName == 'main') ? 'prod' : 'nonprod'
             dockerFileTagMap.each { filenameTagPair ->
               if (filenameTagPair.size() >= 1) {
                 def dockerfile = filenameTagPair[0]
@@ -56,11 +57,9 @@ pipeline {
 
                 sh """
                   echo "Env Type: ${envType}"
-                  echo "Branch Name: ${BRANCH_NAME}"
-                  sleep 600
+                  echo "Branch Name: ${branchName}"
                   docker build -t test -f ${dockerfile} --network=host .
                 """
-                
               } else {
                 error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
               }
