@@ -5,6 +5,7 @@ def common = new org.pgr.pipeline.utilities.common()
 def gitrepoName = ""
 def artifactoryURL = "http://192.168.1.130:8081"
 def imageRepo = "devops-docker-local"
+def buildYamlPath = "../agentPods.yaml"
 
 def dockerFileTagMap = [
   ["./docker/Dockerfile.24.0.6", "24.0.6"]
@@ -19,7 +20,7 @@ pipeline {
     kubernetes {
       label 'k8-jenkins'
       defaultContainer 'jnlp'
-      yaml kubernetesAgent("http://192.168.1.120:8070")
+      yamlFile buildYamlPath
     }
   }
   stages {
