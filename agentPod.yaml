@@ -41,7 +41,7 @@ spec:
   nodeSelector:
     kubernetes.io/os: "linux"
   restartPolicy: "Never"
-  #serviceAccount: "jenkins"
+  serviceAccount: "jenkins"
   volumes:
   - name: "workspace-volume"
     emptyDir: {}
