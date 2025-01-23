@@ -60,7 +60,8 @@ pipeline {
                   echo "Env Type: ${envType}"
                   echo "Branch Name: ${branchName}"
                   ls -l
-                  
+                  ls /var/run/docker.sock
+
                   docker build -t test -f ${dockerfile} --network=host .
                 """
               } else {
