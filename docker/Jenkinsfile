@@ -1,4 +1,4 @@
-@Library('pgr_automation_libraries@main') _  
+@Library('pgr_automation_libraries@master') _  
 
 def common = new org.pgr.pipeline.utilities.common()
 
