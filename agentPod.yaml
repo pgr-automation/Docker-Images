@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  name: jenkins-agent-pod # Added name for the pod
   labels:
     jenkins: "k8-jenkins"
 spec:
@@ -40,7 +41,7 @@ spec:
   nodeSelector:
     kubernetes.io/os: "linux"
   restartPolicy: "Never"
-  serviceAccount: "jenkins"
+  #serviceAccount: "jenkins"
   volumes:
   - name: "workspace-volume"
     emptyDir: {}
