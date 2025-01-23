@@ -20,7 +20,7 @@ pipeline {
     kubernetes {
       label 'k8-jenkins'
       defaultContainer 'jnlp'
-      yamlFile "../agentPods.yaml"
+      yamlFile "../agentPod.yaml"
     }
   }
   stages {
