@@ -15,6 +15,7 @@ pipeline {
   environment {
     DOCKER_REGISTRY_URL = "192.168.1.130:5000"
     DOCKER_REGISTRY_CRDS = "nexus"
+    BUILD_ID = "release-v1.31"
   }
   agent {
     kubernetes {
