@@ -18,7 +18,7 @@ pipeline {
   }
   agent {
     kubernetes {
-      label 'k8-jenkins'
+      label 'builder-agent'
       // defaultContainer 'jnlp'
       yamlFile "../agentPod.yaml"
     }
