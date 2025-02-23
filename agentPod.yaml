@@ -6,7 +6,7 @@ metadata:
     jenkins: "builder-agent"
 spec:
   containers:
-  - name: "docker"
+  - name: "docker-agent"
     image: "docker:latest"
     command:
       - "cat"
