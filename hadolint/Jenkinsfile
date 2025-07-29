@@ -8,7 +8,7 @@ def imageRepo = "9902736822"
 def buildYamlPath = "../agentPod.yaml"
 
 def dockerFileTagMap = [
-  ["hadolint/Dockerfile.hadolinit-2.12.0", "hadolinit-2.12.0"]
+  ["hadolint/Dockerfile.hadolint-2.12.0", "hadolint-2.12.0"]
 ]
 
 pipeline {
