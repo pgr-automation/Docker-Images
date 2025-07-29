@@ -1,0 +1,88 @@
+// @Library('pgr_automation_libraries@master') _  
+
+// def common = new org.pgr.pipeline.utilities.common()
+
+def gitrepoName = ""
+def artifactoryURL = "http://192.168.1.130:8081"
+def imageRepo = "9902736822"
+def buildYamlPath = "../agentPod.yaml"
+
+def dockerFileTagMap = [
+  ["hadolint/Dockerfile.hadolinit-2.12.0", "hadolinit-2.12.0"]
+]
+
+pipeline {
+  environment {
+    DOCKER_REGISTRY_URL = "192.168.1.130:5000"
+    DOCKER_REGISTRY_CRDS = "nexus"
+    BUILD_ID = "release-v1.31"
+  }
+  agent {
+    kubernetes {
+      label 'builder-agent'
+      // defaultContainer 'jnlp'
+      yamlFile "../agentPod.yaml"
+      // podRetention: never()
+    }
+  }
+  stages {
+    stage('Lint Dockerfiles') {
+      steps {
+        container('hadolint-agent') {
+          script {
+            dockerFileTagMap.each { filenameTagPair ->
+              if (filenameTagPair.size() >= 1) { 
+                def dockerfile = filenameTagPair[0]
+                echo "Running dockerLint for Dockerfile: ${dockerfile}"
+                sh """
+                  hadolint ${dockerfile} || true
+                """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+              }
+            }
+          }
+        }
+      }
+    }
+    stage('Image Build & Push') {
+      steps {
+        container('docker-agent') {
+          script {
+            echo "Image build and push to artifactory"
+            def branchName = env.BRANCH_NAME //?: 'nonprod' // Default to 'nonprod'
+            def envType = (branchName == 'main') ? 'prod' : 'nonprod'
+            dockerFileTagMap.each { filenameTagPair ->
+              if (filenameTagPair.size() >= 1) {
+                def dockerfile = filenameTagPair[0]
+                def tag = filenameTagPair[1]
+                currentBuild.displayName = "${tag} (#${env.BUILD_NUMBER})"
+                echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
+                withCredentials([usernamePassword(credentialsId: '1001', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                  sh """
+                  echo "$DOCKER_PASS" | docker login  -u "$DOCKER_USER" --password-stdin
+                  docker build -t $imageRepo/${tag} -f ${dockerfile} --network=host .
+                  docker push $imageRepo/${tag}
+                  docker logout
+                  """
+                }
+
+
+                // sh """
+                //   echo "Env Type: ${envType}"
+                //   echo "Branch Name: ${branchName}"
+                //   ls -l
+                //   ls /var/run/docker.sock
+                //   docker build -t docker-${tag} -f ${dockerfile} --network=host .
+
+                // """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
