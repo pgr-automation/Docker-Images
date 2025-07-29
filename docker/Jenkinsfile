@@ -1,7 +1,7 @@
+@Library('pgr_automation_libraries@main') _
 
 def call(body) {
-
-  // common = new org.pgr.pipeline.utilities.common()
+  def common = new org.pgr.pipeline.utilities.common()
 
   def config = [:]
   body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -21,23 +21,21 @@ def call(body) {
     environment {
       DOCKER_REGISTRY_URL = "192.168.1.130:5000"
       DOCKER_REGISTRY_CRDS = "nexus"
+      BUILD_ID = "release-v1.31"
     }
-
     agent {
       kubernetes {
-        label 'jenkins-buid_deploy'
-        // defaultContainer 'jnlp'
-        yaml kubernetesAgent("http://192.168.1.120:8070")
+        label 'builder-agent'
+        yamlFile buildYamlPath
       }
     }
-
     stages {
-      stage('Lint Dockerfile') {
+      stage('Lint Dockerfiles') {
         steps {
           container('hadolint-agent') {
             script {
               dockerFileTagMap.each { filenameTagPair ->
-                if (filenameTagPair.size() >= 1) {
+                if (filenameTagPair.size() >= 1) { 
                   def dockerfile = filenameTagPair[0]
                   echo "Running dockerLint for Dockerfile: ${dockerfile}"
                   sh """
@@ -51,22 +49,18 @@ def call(body) {
           }
         }
       }
-
-      stage('Build & Push') {
+      stage('Image Build & Push') {
         steps {
           container('docker-agent') {
             script {
               echo "Image build and push to artifactory"
               def branchName = env.BRANCH_NAME
               def envType = (branchName == 'main') ? 'prod' : 'nonprod'
-
               dockerFileTagMap.each { filenameTagPair ->
                 if (filenameTagPair.size() >= 1) {
                   def dockerfile = filenameTagPair[0]
                   def tag = filenameTagPair[1]
                   echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
-
-                  appImage = "${env.IMAGE_REPO_URI}/${IMAGE_REPO_NONPROD_KEY}/docker:${tag}"
 
                   sh """
                     echo "Env Type: ${envType}"
@@ -74,10 +68,10 @@ def call(body) {
                     ls -l
                     ls /var/run/docker.sock
 
-                    docker build -t ${appImage} -f ${dockerfile} --network=host .
+                    docker build -t docker-${tag} -f ${dockerfile} --network=host .
                   """
                 } else {
-                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
                 }
               }
             }
