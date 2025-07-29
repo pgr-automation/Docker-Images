@@ -55,6 +55,7 @@ pipeline {
               if (filenameTagPair.size() >= 1) {
                 def dockerfile = filenameTagPair[0]
                 def tag = filenameTagPair[1]
+                currentBuild.displayName = "docker-${tag}"
                 echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
 
                 sh """
