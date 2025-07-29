@@ -4,6 +4,7 @@ metadata:
   name: jenkins-agent-pod # Added name for the pod
   labels:
     jenkins: "k8-jenkins"
+  namespace: "jenkins-agent"
 spec:
   containers:
   - name: "docker"

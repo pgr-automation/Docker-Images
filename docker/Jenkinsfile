@@ -1,71 +1,85 @@
-@Library('pgr_automation_libraries@master') _  
+@Library('pgr_automation_libraries@master') _
 
-def common = new org.pgr.pipeline.utilities.common()
+def call(body) {
 
-def gitrepoName = ""
-def artifactoryURL = "http://192.168.1.130:8081"
-def imageRepo = "devops-docker-local"
-def buildYamlPath = "../agentPod.yaml"
+  common = new org.pgr.pipeline.utilities.common()
 
-def dockerFileTagMap = [
-  ["docker/Dockerfile.24.0.6", "24.0.6"]
-]
+  def config = [:]
+  body.resolveStrategy = Closure.DELEGATE_FIRST
+  body.delegate = config
+  body()
 
-pipeline {
-  environment {
-    DOCKER_REGISTRY_URL = "192.168.1.130:5000"
-    DOCKER_REGISTRY_CRDS = "nexus"
-  }
-  agent {
-    kubernetes {
-      label 'jenkins-buid_deploy'
-      // defaultContainer 'jnlp'
-       yaml kubernetesAgent("http://192.168.1.120:8070")
+  def gitrepoName = ""
+  def artifactoryURL = "http://192.168.1.130:8081"
+  def imageRepo = "devops-docker-local"
+  def buildYamlPath = "../agentPod.yaml"
+
+  def dockerFileTagMap = [
+    ["docker/Dockerfile.24.0.6", "24.0.6"]
+  ]
+
+  pipeline {
+    environment {
+      DOCKER_REGISTRY_URL = "192.168.1.130:5000"
+      DOCKER_REGISTRY_CRDS = "nexus"
     }
-  }
-  stages {
-    stage('Lint Dockerfile') {
-      steps {
-        container('hadolint-agent') {
-          script {
-            dockerFileTagMap.each { filenameTagPair ->
-              if (filenameTagPair.size() >= 1) { 
-                def dockerfile = filenameTagPair[0]
-                echo "Running dockerLint for Dockerfile: ${dockerfile}"
-                sh """
-                  hadolint ${dockerfile} || true
-                """
-              } else {
-                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+
+    agent {
+      kubernetes {
+        label 'jenkins-buid_deploy'
+        // defaultContainer 'jnlp'
+        yaml kubernetesAgent("http://192.168.1.120:8070")
+      }
+    }
+
+    stages {
+      stage('Lint Dockerfile') {
+        steps {
+          container('hadolint-agent') {
+            script {
+              dockerFileTagMap.each { filenameTagPair ->
+                if (filenameTagPair.size() >= 1) {
+                  def dockerfile = filenameTagPair[0]
+                  echo "Running dockerLint for Dockerfile: ${dockerfile}"
+                  sh """
+                    hadolint ${dockerfile} || true
+                  """
+                } else {
+                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+                }
               }
             }
           }
         }
       }
-    }
-    stage('Build & Push') {
-      steps {
-        container('docker-agent') {
-          script {
-            echo "Image build and push to artifactory"
-            def branchName = env.BRANCH_NAME //?: 'nonprod' // Default to 'nonprod'
-            def envType = (branchName == 'main') ? 'prod' : 'nonprod'
-            dockerFileTagMap.each { filenameTagPair ->
-              if (filenameTagPair.size() >= 1) {
-                def dockerfile = filenameTagPair[0]
-                def tag = filenameTagPair[1]
-                echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
 
-                sh """
-                  echo "Env Type: ${envType}"
-                  echo "Branch Name: ${branchName}"
-                  ls -l
-                  ls /var/run/docker.sock
+      stage('Build & Push') {
+        steps {
+          container('docker-agent') {
+            script {
+              echo "Image build and push to artifactory"
+              def branchName = env.BRANCH_NAME
+              def envType = (branchName == 'main') ? 'prod' : 'nonprod'
 
-                  docker build -t test -f ${dockerfile} --network=host .
-                """
-              } else {
-                error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
+              dockerFileTagMap.each { filenameTagPair ->
+                if (filenameTagPair.size() >= 1) {
+                  def dockerfile = filenameTagPair[0]
+                  def tag = filenameTagPair[1]
+                  echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
+
+                  appImage = "${env.IMAGE_REPO_URI}/${IMAGE_REPO_NONPROD_KEY}/docker:${tag}"
+
+                  sh """
+                    echo "Env Type: ${envType}"
+                    echo "Branch Name: ${branchName}"
+                    ls -l
+                    ls /var/run/docker.sock
+
+                    docker build -t ${appImage} -f ${dockerfile} --network=host .
+                  """
+                } else {
+                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
+                }
               }
             }
           }
