@@ -4,7 +4,7 @@ def common = new org.pgr.pipeline.utilities.common()
 
 def gitrepoName = ""
 def artifactoryURL = "http://192.168.1.130:8081"
-def imageRepo = "devops-docker-local"
+def imageRepo = "9902736822"
 def buildYamlPath = "../agentPod.yaml"
 
 def dockerFileTagMap = [
@@ -60,8 +60,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: '1001', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                   sh """
                   echo "$DOCKER_PASS" | docker login  -u "$DOCKER_USER" --password-stdin
-                  docker build -t $env.IMAGE_REPO_URI/docker-${tag} -f ${dockerfile} --network=host .
-                  docker push $env.IMAGE_REPO_URI/docker-${tag}
+                  docker build -t $imageRepo/docker-${tag} -f ${dockerfile} --network=host .
+                  docker push $imageRepo/docker-${tag}
                   docker logout
                   """
                 }
