@@ -1,4 +1,4 @@
-FROM openjdk:17.0.2-jdk
+FROM openjdk:17-slim
 
 LABEL maintainer="pgr"
 
@@ -9,18 +9,14 @@ ARG uid=1000
 ARG gid=1000
 ARG MAVEN_VERSION=3.8.8
 ARG USER_HOME_DIR="/home/${user}"
-ARG BASE_URL=https://downloads.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries
+ARG BASE_URL=https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries
 
 # Create user and group
 RUN groupadd -g ${gid} ${group} \
     && useradd -u ${uid} -g ${group} -m -d "${USER_HOME_DIR}" -s /bin/bash ${user}
 
 # Install Maven
-RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
-    && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
-    && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
-    && rm -f /tmp/apache-maven.tar.gz \
-    && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
 
 # Set environment variables
 ENV MAVEN_HOME=/usr/share/maven
@@ -33,6 +29,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
         jq \
         unzip \
         git \
@@ -40,11 +38,14 @@ RUN apt-get update \
         findutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+    && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+    && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+    && rm -f /tmp/apache-maven.tar.gz \
+    && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 # Switch to Jenkins user
 USER ${user}
 
 WORKDIR $USER_HOME_DIR
 
-# Default command
 CMD ["bash"]
