@@ -1,7 +1,7 @@
 
 def call(body) {
 
-  common = new org.pgr.pipeline.utilities.common()
+  // common = new org.pgr.pipeline.utilities.common()
 
   def config = [:]
   body.resolveStrategy = Closure.DELEGATE_FIRST
