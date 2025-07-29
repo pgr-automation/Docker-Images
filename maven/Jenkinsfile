@@ -22,7 +22,7 @@ pipeline {
       label 'builder-agent'
       // defaultContainer 'jnlp'
       yamlFile "../agentPod.yaml"
-      podRentention never()
+      podRetention: never()
     }
   }
   stages {
