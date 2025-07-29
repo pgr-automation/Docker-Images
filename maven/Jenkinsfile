@@ -8,7 +8,7 @@ def imageRepo = "9902736822"
 def buildYamlPath = "../agentPod.yaml"
 
 def dockerFileTagMap = [
-  ["maven/Dockerfile.openjdk17.0.2", "openjdk17.0.2-mvn3"]
+  ["maven/Dockerfile.openjdk.17.0.2", "openjdk17.0.2-mvn3"]
 ]
 
 pipeline {
