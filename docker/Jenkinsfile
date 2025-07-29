@@ -63,7 +63,7 @@ pipeline {
                   ls -l
                   ls /var/run/docker.sock
 
-                  docker build -t test -f ${dockerfile} --network=host .
+                  docker build -t docker-${tag} -f ${dockerfile} --network=host .
                 """
               } else {
                 error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
