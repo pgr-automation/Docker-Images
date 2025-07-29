@@ -1,6 +1,6 @@
-@Library('pgr_automation_libraries@master') _  
+// @Library('pgr_automation_libraries@master') _  
 
-def common = new org.pgr.pipeline.utilities.common()
+// def common = new org.pgr.pipeline.utilities.common()
 
 def gitrepoName = ""
 def artifactoryURL = "http://192.168.1.130:8081"
