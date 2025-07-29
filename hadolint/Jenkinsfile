@@ -60,6 +60,8 @@ pipeline {
                 echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
                 withCredentials([usernamePassword(credentialsId: '1001', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                   sh """
+                  ls -lrth 
+                  pwd
                   echo "$DOCKER_PASS" | docker login  -u "$DOCKER_USER" --password-stdin
                   docker build -t $imageRepo/${tag} -f ${dockerfile} --network=host .
                   docker push $imageRepo/${tag}
