@@ -8,7 +8,7 @@ def imageRepo = "9902736822"
 def buildYamlPath = "../agentPod.yaml"
 
 def dockerFileTagMap = [
-  ["docker/Dockerfile.24.0.6", "24.0.6"]
+  ["docker/Dockerfile.24.0.6", "24.0.7"]
 ]
 
 pipeline {
