@@ -57,15 +57,21 @@ pipeline {
                 def tag = filenameTagPair[1]
                 currentBuild.displayName = "docker-${tag} (#${env.BUILD_NUMBER})"
                 echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
+                withCredentials([usernamePassword(credentialsId: '1001', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                  sh """
+                  echo "$DOCKER_PASS" | docker login  -u "$DOCKER_USER" --password-stdin
+                  """
+                }
 
-                sh """
-                  echo "Env Type: ${envType}"
-                  echo "Branch Name: ${branchName}"
-                  ls -l
-                  ls /var/run/docker.sock
-                  docker build -t docker-${tag} -f ${dockerfile} --network=host .
 
-                """
+                // sh """
+                //   echo "Env Type: ${envType}"
+                //   echo "Branch Name: ${branchName}"
+                //   ls -l
+                //   ls /var/run/docker.sock
+                //   docker build -t docker-${tag} -f ${dockerfile} --network=host .
+
+                // """
               } else {
                 error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
               }
