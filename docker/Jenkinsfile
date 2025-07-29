@@ -62,8 +62,8 @@ pipeline {
                   echo "Branch Name: ${branchName}"
                   ls -l
                   ls /var/run/docker.sock
-
                   docker build -t docker-${tag} -f ${dockerfile} --network=host .
+
                 """
               } else {
                 error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
