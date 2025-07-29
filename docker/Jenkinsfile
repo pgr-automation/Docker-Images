@@ -1,4 +1,3 @@
-@Library('pgr_automation_libraries@master') _
 
 def call(body) {
 
