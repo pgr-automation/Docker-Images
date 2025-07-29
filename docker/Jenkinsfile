@@ -1,78 +1,72 @@
-@Library('pgr_automation_libraries@main') _
+@Library('pgr_automation_libraries@main') _  
 
-def call(body) {
-  def common = new org.pgr.pipeline.utilities.common()
+def common = new org.pgr.pipeline.utilities.common()
 
-  def config = [:]
-  body.resolveStrategy = Closure.DELEGATE_FIRST
-  body.delegate = config
-  body()
+def gitrepoName = ""
+def artifactoryURL = "http://192.168.1.130:8081"
+def imageRepo = "devops-docker-local"
+def buildYamlPath = "../agentPod.yaml"
 
-  def gitrepoName = ""
-  def artifactoryURL = "http://192.168.1.130:8081"
-  def imageRepo = "devops-docker-local"
-  def buildYamlPath = "../agentPod.yaml"
+def dockerFileTagMap = [
+  ["docker/Dockerfile.24.0.6", "24.0.6"]
+]
 
-  def dockerFileTagMap = [
-    ["docker/Dockerfile.24.0.6", "24.0.6"]
-  ]
-
-  pipeline {
-    environment {
-      DOCKER_REGISTRY_URL = "192.168.1.130:5000"
-      DOCKER_REGISTRY_CRDS = "nexus"
-      BUILD_ID = "release-v1.31"
+pipeline {
+  environment {
+    DOCKER_REGISTRY_URL = "192.168.1.130:5000"
+    DOCKER_REGISTRY_CRDS = "nexus"
+    BUILD_ID = "release-v1.31"
+  }
+  agent {
+    kubernetes {
+      label 'builder-agent'
+      // defaultContainer 'jnlp'
+      yamlFile "../agentPod.yaml"
     }
-    agent {
-      kubernetes {
-        label 'builder-agent'
-        yamlFile buildYamlPath
-      }
-    }
-    stages {
-      stage('Lint Dockerfiles') {
-        steps {
-          container('hadolint-agent') {
-            script {
-              dockerFileTagMap.each { filenameTagPair ->
-                if (filenameTagPair.size() >= 1) { 
-                  def dockerfile = filenameTagPair[0]
-                  echo "Running dockerLint for Dockerfile: ${dockerfile}"
-                  sh """
-                    hadolint ${dockerfile} || true
-                  """
-                } else {
-                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
-                }
+  }
+  stages {
+    stage('Lint Dockerfiles') {
+      steps {
+        container('hadolint-agent') {
+          script {
+            dockerFileTagMap.each { filenameTagPair ->
+              if (filenameTagPair.size() >= 1) { 
+                def dockerfile = filenameTagPair[0]
+                echo "Running dockerLint for Dockerfile: ${dockerfile}"
+                sh """
+                  hadolint ${dockerfile} || true
+                """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}")
               }
             }
           }
         }
       }
-      stage('Image Build & Push') {
-        steps {
-          container('docker-agent') {
-            script {
-              echo "Image build and push to artifactory"
-              def branchName = env.BRANCH_NAME
-              def envType = (branchName == 'main') ? 'prod' : 'nonprod'
-              dockerFileTagMap.each { filenameTagPair ->
-                if (filenameTagPair.size() >= 1) {
-                  def dockerfile = filenameTagPair[0]
-                  def tag = filenameTagPair[1]
-                  echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
+    }
+    stage('Image Build & Push') {
+      steps {
+        container('docker-agent') {
+          script {
+            echo "Image build and push to artifactory"
+            def branchName = env.BRANCH_NAME //?: 'nonprod' // Default to 'nonprod'
+            def envType = (branchName == 'main') ? 'prod' : 'nonprod'
+            dockerFileTagMap.each { filenameTagPair ->
+              if (filenameTagPair.size() >= 1) {
+                def dockerfile = filenameTagPair[0]
+                def tag = filenameTagPair[1]
+                echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
 
-                  sh """
-                    echo "Env Type: ${envType}"
-                    echo "Branch Name: ${branchName}"
-                    ls -l
-                    ls /var/run/docker.sock
+                sh """
+                  echo "Env Type: ${envType}"
+                  echo "Branch Name: ${branchName}"
+                  ls -l
+                  ls /var/run/docker.sock
 
-                    docker build -t docker-${tag} -f ${dockerfile} --network=host .
-                  """
-                } else {
-                  error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
-                }
+                  docker build -t docker-${tag} -f ${dockerfile} --network=host .
+                """
+              } else {
+                error("Invalid dockerFileTagMap entry: ${filenameTagPair}") 
               }
             }
           }
