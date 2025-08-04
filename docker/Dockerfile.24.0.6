@@ -6,7 +6,9 @@ ARG PASSWORD
 
 ENV USERNAME=${USERNAME}
 ENV PASSWORD=${PASSWORD}
-
+RUN apk add --no-cache curl git && \
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin && \
+    trivy --version
 RUN apk --update --no-cache add curl git zip 
 
 RUN apk update \
