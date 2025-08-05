@@ -10,6 +10,8 @@ FROM alpine:3.18
 
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder trivy /usr/local/bin/trivy
+COPY --from=builder trivy /usr/local/bin/trivy 
+RUN chmod +x /usr/local/bin/trivy && \
+    trivy --version
 
 ENTRYPOINT ["trivy"]
