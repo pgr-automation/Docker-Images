@@ -1,0 +1,18 @@
+FROM golang:1.21 AS builder
+
+# Install dependencies and clone Trivy
+RUN apt-get update && apt-get install -y git
+RUN git clone https://github.com/aquasecurity/trivy.git /trivy
+WORKDIR /trivy
+
+# Build Trivy
+RUN make build
+
+# Final image
+FROM alpine:3.18
+
+RUN apk --no-cache add ca-certificates
+
+COPY --from=builder /trivy/bin/trivy /usr/local/bin/trivy
+
+ENTRYPOINT ["trivy"]
