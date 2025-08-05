@@ -1,17 +1,27 @@
 FROM golang:1.21 AS builder
 
-# Install dependencies and clone Trivy
-RUN apt-get update && apt-get install -y git
+# Set working directory
+WORKDIR /tmp
+
+# Install wget
+RUN apt-get update && apt-get install -y wget
+
+# Download and extract Trivy binary
 RUN wget "https://get.trivy.dev/trivy?type=tar.gz&version=0.65.0&os=linux&arch=arm64" -O trivy.tar.gz && \
-    tar -xzf trivy.tar.gz 
+    tar -xzf trivy.tar.gz
 
 # Final image
 FROM alpine:3.18
 
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder trivy /usr/local/bin/trivy 
-RUN chmod +x /usr/local/bin/trivy && \
-    trivy --version
+# Copy the binary from the builder stage
+COPY --from=builder /tmp/trivy /usr/local/bin/trivy
+
+# Make it executable (should already be, but safe)
+RUN chmod +x /usr/local/bin/trivy
+
+# Confirm version works
+RUN trivy --version
 
 ENTRYPOINT ["trivy"]
