@@ -2,8 +2,8 @@ FROM golang:1.21 AS builder
 
 # Install dependencies and clone Trivy
 RUN apt-get update && apt-get install -y git
-RUN wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.51.1_Linux-64bit.tar.gz && \
-    tar -xzf trivy_0.51.1_Linux-64bit.tar.gz 
+RUN wget "https://get.trivy.dev/trivy?type=tar.gz&version=0.65.0&os=linux&arch=arm64" -O trivy.tar.gz && \
+    tar -xzf trivy.tar.gz 
 
 # Final image
 FROM alpine:3.18
