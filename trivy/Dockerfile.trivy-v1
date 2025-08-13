@@ -1,10 +1,25 @@
-FROM alpine:3.18
+FROM docker:24.0.6
+LABEL MAINTAINER="pgr-automation"
+ARG USERNAME
+ARG PASSWORD
 
+ENV USERNAME=${USERNAME}
+ENV PASSWORD=${PASSWORD}
 RUN apk --no-cache add wget tar ca-certificates
+
+
+RUN apk --update --no-cache add curl git zip 
+
+RUN apk update \
+  && apk add --no-cache wget \
+  && apk add --no-cache dateutils \  
+  && apk add --no-cache jq \ 
+  && apk add --no-cache unzip \
+  && apk add --no-cache ruby \
+  && rm -rf /var/cache/apk/*
 
 ARG TRIVY_VERSION=0.65.0
 ARG TARGETARCH
-
 RUN case "${TARGETARCH}" in \
         amd64)  ARCH="64bit" ;; \
         arm64)  ARCH="ARM64" ;; \
@@ -18,4 +33,4 @@ RUN case "${TARGETARCH}" in \
 
 RUN trivy --version
 
-CMD ["/bin/sh"]
+
