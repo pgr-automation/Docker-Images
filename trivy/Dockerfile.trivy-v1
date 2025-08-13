@@ -18,4 +18,4 @@ RUN case "${TARGETARCH}" in \
 
 RUN trivy --version
 
-ENTRYPOINT ["trivy"]
+ENTRYPOINT ["/bin/sh"]
