@@ -6,9 +6,7 @@ ARG PASSWORD
 
 ENV USERNAME=${USERNAME}
 ENV PASSWORD=${PASSWORD}
-RUN apk add --no-cache curl git && \
-    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin && \
-    trivy --version
+
 RUN apk --update --no-cache add curl git zip 
 
 RUN apk update \
@@ -18,3 +16,18 @@ RUN apk update \
   && apk add --no-cache unzip \
   && apk add --no-cache ruby \
   && rm -rf /var/cache/apk/*
+  
+ARG TRIVY_VERSION=0.65.0
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in \
+        amd64)  ARCH="64bit" ;; \
+        arm64)  ARCH="ARM64" ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    wget -O trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-${ARCH}.tar.gz" && \
+    tar -xzf trivy.tar.gz && \
+    mv trivy /usr/local/bin/trivy && \
+    chmod +x /usr/local/bin/trivy && \
+    rm trivy.tar.gz
+
+RUN trivy --version
