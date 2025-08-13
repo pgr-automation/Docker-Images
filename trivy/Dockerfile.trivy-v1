@@ -24,4 +24,4 @@ RUN chmod +x /usr/local/bin/trivy
 # Confirm version works
 RUN trivy --version
 
-ENTRYPOINT ["trivy"]
+CMD ["/bin/bash"]
