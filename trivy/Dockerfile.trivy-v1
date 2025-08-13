@@ -1,27 +1,21 @@
-FROM golang:1.21 AS builder
-
-# Set working directory
-WORKDIR /tmp
-
-# Install wget
-RUN apt-get update && apt-get install -y wget
-
-# Download and extract Trivy binary
-RUN wget "https://get.trivy.dev/trivy?type=tar.gz&version=0.65.0&os=linux&arch=arm64" -O trivy.tar.gz && \
-    tar -xzf trivy.tar.gz
-
-# Final image
 FROM alpine:3.18
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add wget tar ca-certificates
 
-# Copy the binary from the builder stage
-COPY --from=builder /tmp/trivy /usr/local/bin/trivy
+ARG TRIVY_VERSION=0.65.0
+ARG TARGETARCH
 
-# Make it executable (should already be, but safe)
-RUN chmod +x /usr/local/bin/trivy
+RUN case "${TARGETARCH}" in \
+        amd64)  ARCH="64bit" ;; \
+        arm64)  ARCH="ARM64" ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    wget -O trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-${ARCH}.tar.gz" && \
+    tar -xzf trivy.tar.gz && \
+    mv trivy /usr/local/bin/trivy && \
+    chmod +x /usr/local/bin/trivy && \
+    rm trivy.tar.gz
 
-# Confirm version works
 RUN trivy --version
 
-CMD ["/bin/bash"]
+ENTRYPOINT ["trivy"]
