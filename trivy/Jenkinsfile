@@ -2,7 +2,7 @@
 
 // def common = new org.pgr.pipeline.utilities.common()
 def gitorgName = "pgr-automation"
-def gitrepoName = "builder-Images"
+def gitrepoName = "builder-images"
 def artifactoryURL = "http://192.168.1.130:8081"
 def imageRepo = "192.168.1.139:32000"
 def buildYamlPath = "../agentPod.yaml"
