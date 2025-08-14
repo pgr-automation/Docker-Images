@@ -1,22 +1,23 @@
 // @Library('pgr_automation_libraries@master') _  
 
 // def common = new org.pgr.pipeline.utilities.common()
-
-def gitrepoName = ""
+def gitorgName = "pgr-automation"
+def gitrepoName = "Builder-Images"
 def artifactoryURL = "http://192.168.1.130:8081"
-def imageRepo = "9902736822"
+def imageRepo = "192.168.1.139:32000"
 def buildYamlPath = "../agentPod.yaml"
+def nexusRepoKey = "pgr-devops-docker-local"
 
 def dockerFileTagMap = [
   ["trivy/Dockerfile.trivy-v1", "trivy-v1"]
 ]
 
 pipeline {
-  environment {
-    DOCKER_REGISTRY_URL = "192.168.1.130:5000"
-    DOCKER_REGISTRY_CRDS = "nexus"
-    BUILD_ID = "release-v1.31"
-  }
+  // environment {
+  //   // DOCKER_REGISTRY_URL = "192.168.1.130:5000"
+  //   // DOCKER_REGISTRY_CRDS = "nexus"
+  //   // BUILD_ID = "release-v1.31"
+  // }
   agent {
     kubernetes {
       label 'builder-agent'
@@ -56,13 +57,15 @@ pipeline {
               if (filenameTagPair.size() >= 1) {
                 def dockerfile = filenameTagPair[0]
                 def tag = filenameTagPair[1]
+                def appName = filName[0].split("/")[0]
+                def imageTag = "$imageRepo/$gitrepoName/$appName:${tag}"
                 currentBuild.displayName = "${tag} (#${env.BUILD_NUMBER})"
                 echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
-                withCredentials([usernamePassword(credentialsId: '1001', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'nexus-docker-registry', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                   sh """
-                  echo "$DOCKER_PASS" | docker login  -u "$DOCKER_USER" --password-stdin
-                  docker build -t $imageRepo/${tag}:${tag} -f ${dockerfile} --network=host .
-                  docker push $imageRepo/${tag}:${tag} 
+                  echo "$DOCKER_PASS" | docker login ${imageRepo} -u "$DOCKER_USER" --password-stdin
+                  docker build -t $imageTag  -f ${dockerfile} --network=host .
+                  docker push $imageTag  
                   docker logout
                   """
                 }
