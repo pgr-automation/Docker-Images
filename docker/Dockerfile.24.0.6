@@ -29,5 +29,8 @@ RUN case "${TARGETARCH}" in \
     mv trivy /usr/local/bin/trivy && \
     chmod +x /usr/local/bin/trivy && \
     rm trivy.tar.gz
+RUN mkdir -p /etc/docker && \
+    echo '{ "insecure-registries": ["192.168.1.139:32000"] }' > /etc/docker/daemon.json
+
 
 RUN trivy --version

@@ -7,7 +7,7 @@
 spec:
   containers:
   - name: "docker-agent"
-    image: "docker:latest"
+    image: "9902736822/docker:24.0.7"
     command:
       - "cat"
     tty: true
