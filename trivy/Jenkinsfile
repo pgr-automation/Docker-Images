@@ -2,7 +2,7 @@
 
 // def common = new org.pgr.pipeline.utilities.common()
 def gitorgName = "pgr-automation"
-def gitrepoName = "Builder-Images"
+def gitrepoName = "builder-Images"
 def artifactoryURL = "http://192.168.1.130:8081"
 def imageRepo = "192.168.1.139:32000"
 def buildYamlPath = "../agentPod.yaml"
@@ -58,7 +58,7 @@ pipeline {
                 def dockerfile = filenameTagPair[0]
                 def tag = filenameTagPair[1]
                 def appName = filenameTagPair[0].split("/")[0]
-                def imageTag = "$imageRepo/$gitrepoName/$appName:${tag}"
+                def imageTag = "$imageRepo/$nexusRepoKey/$gitrepoName/$appName:${tag}"
                 currentBuild.displayName = "${tag} (#${env.BUILD_NUMBER})"
                 echo "Building Docker image from: ${dockerfile}, Tag: ${tag}"
                 withCredentials([usernamePassword(credentialsId: 'nexus-docker-registry', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
